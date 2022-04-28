@@ -143,7 +143,7 @@ def generate_parcel_path():
     start_date_index = random.randint(0, max_start_date_index)
     start_date = valid_dates[start_date_index]
     end_date = valid_dates[start_date_index+total_days]
-    # 6 Steps in a successful delivery, create 6 timestamps
+    # Create a timestamp for each step in the selected path
     timestamps = generate_random_timestamps_range(
         start_date, end_date, steps)
     for i in range(0, steps):
