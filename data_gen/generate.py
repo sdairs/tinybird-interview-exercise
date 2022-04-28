@@ -117,6 +117,7 @@ def get_customer_id():
 
 
 def generate_random_timestamps_range(start, end, count):
+    # Generates X number of timestamps between the start/end dates
     delta = (end-start).total_seconds()  # Seconds between start/end
     interval = delta / count
     times = [start]
@@ -126,6 +127,9 @@ def generate_random_timestamps_range(start, end, count):
 
 
 def generate_parcel_path():
+    # Generates an end-to-end 'path' of a parcel using the available paths defined in 'path_status'
+    # A 'path' is the change in status of a parcel over time i.e. picked_up -> with_courier -> delivered
+    # This simulated the journey that the parcel took
     path_results = []
     # Pick a random path from the dict of paths
     path = random.choices(list(path_status.keys()),
@@ -154,6 +158,7 @@ def generate_parcel_path():
 
 
 def generate_parcel_data(num_parcels):
+    # Generate X number of parcel transactions, each with their complete end to end paths
     for parcel in range(0, num_parcels):
         sender_id = get_customer_id()
         package_id = str(uuid4())
@@ -183,6 +188,7 @@ with open(dir_path+'/data/output.txt', 'w') as f:
 
 
 def upload_file():
+    # Uploaded generated file to S3
     s3 = boto3.client(
         's3',
         region_name=REGION,
