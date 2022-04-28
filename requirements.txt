@@ -1,2 +1,6 @@
 boto3
 tinybird-cli
+streamlit
+pandas
+numpy
+watchdog
