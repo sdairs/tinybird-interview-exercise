@@ -9,10 +9,11 @@ from uuid import uuid4
 ##
 # SET YOUR AWS KEYS HERE
 ##
-SECRET_KEY = ''
-ACCESS_KEY = ''
-REGION = 'eu-west-1'
-S3_BUCKET = 'tinybird-test'
+SECRET_KEY = '' # Your IAM User Secret Key
+ACCESS_KEY = '' # Your IAM User Access Key
+REGION = '' # Your AWS Region
+S3_BUCKET = '' # Your AWS bucket name (without the s3:// prefix)
+EVENT_COUNT=10000 # How many events to generate
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -173,7 +174,7 @@ def generate_parcel_data(num_parcels):
 # Generate & write to local file
 with open(dir_path+'/data/output.txt', 'w') as f:
     start_time = datetime.datetime.now()
-    for x in generate_parcel_data(1000):
+    for x in generate_parcel_data(EVENT_COUNT):
         f.write(json.dumps(x)+'\n')
     end_time = datetime.datetime.now()
     print('Took {end_time} seconds'.format(
