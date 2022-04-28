@@ -9,11 +9,11 @@ from uuid import uuid4
 ##
 # SET YOUR AWS KEYS HERE
 ##
-SECRET_KEY = '' # Your IAM User Secret Key
-ACCESS_KEY = '' # Your IAM User Access Key
-REGION = '' # Your AWS Region
-S3_BUCKET = '' # Your AWS bucket name (without the s3:// prefix)
-EVENT_COUNT=10000 # How many events to generate
+SECRET_KEY = ''  # Your IAM User Secret Key
+ACCESS_KEY = ''  # Your IAM User Access Key
+REGION = ''  # Your AWS Region
+S3_BUCKET = ''  # Your AWS bucket name (without the s3:// prefix)
+EVENT_COUNT = 10000  # How many events to generate
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -197,5 +197,6 @@ def upload_file():
     except ClientError as e:
         return False
     return True
+
 
 upload_file()
