@@ -1,3 +1,4 @@
+from struct import pack
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -40,24 +41,21 @@ def get_parcel_status(package_id):
         '''.format(colour='red' if status != 'DELIVERED' else 'green', status=status, status_updated_at=status_updated_at)
 
 
-st.markdown(get_parcel_status(package_id), unsafe_allow_html=True)
-
-st.subheader('History')
-
-
 def get_parcel_history(package_id):
-
-    if package_id == '':
-        return ""
+    if len(package_id) == 0:
+        return pd.DataFrame()
     else:
         params = {
             'token': TOKEN,
             'package_id': package_id
         }
-    history_response = requests.get(status_history_api, params=params)
-    history_response_json = history_response.json()
-    data = pd.DataFrame(history_response_json['data'])
-    return data
+        history_response = requests.get(status_history_api, params=params)
+        history_response_json = history_response.json()
+        print(history_response_json)
+        data = pd.DataFrame(history_response_json['data'])
+        return data
 
 
+st.markdown(get_parcel_status(package_id), unsafe_allow_html=True)
+st.subheader('History')
 st.table(get_parcel_history(package_id))
