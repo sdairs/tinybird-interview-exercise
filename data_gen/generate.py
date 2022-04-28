@@ -81,6 +81,7 @@ path_status_weights = [80, 2, 15, 3]
 
 
 def generate_dates(numdays):
+    # Generate list of valid dates
     base = datetime.datetime(2020, 1, 1, hour=0, minute=0, second=0)
     return [base + datetime.timedelta(days=x) for x in range(numdays)]
 
