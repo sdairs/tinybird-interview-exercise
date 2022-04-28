@@ -195,7 +195,6 @@ def upload_file():
         print('Finished uploading')
         print(response)
     except ClientError as e:
-        logging.error(e)
         return False
     return True
 
