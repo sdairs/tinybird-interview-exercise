@@ -1,0 +1,26 @@
+NODE select_latest_status
+DESCRIPTION >
+    Select the latest status of every package
+
+SQL >
+
+    %
+    SELECT DISTINCT ON (package_id) 
+    package_id, 
+    status, 
+    status_updated_at 
+    FROM parcel_tracking_data_1
+    order by status_updated_at desc
+
+
+
+NODE optional_id_filter
+SQL >
+
+    %
+    SELECT * FROM select_latest_status
+    {% if defined(package_id) %}
+      WHERE package_id = {{ String(package_id) }}
+    {% end %}
+
+

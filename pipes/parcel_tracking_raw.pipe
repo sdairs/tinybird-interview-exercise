@@ -1,0 +1,6 @@
+NODE node1
+SQL >
+
+    SELECT * FROM parcel_tracking_data_1
+
+
