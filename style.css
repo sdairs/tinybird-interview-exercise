@@ -1,0 +1,7 @@
+button:first-of-type {
+    width:100%;
+    font-size: 1.8rem;
+}
+
+tbody th {display:none}
+.blank {display:none}
