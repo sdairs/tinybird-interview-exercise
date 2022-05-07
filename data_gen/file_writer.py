@@ -4,19 +4,17 @@ import datetime
 import os
 import json
 import parcel_shipping_generator as ps_gen
-
+from dotenv import load_dotenv
 
 class ACMEFileWriter():
-    SECRET_KEY = ''
-    ACCESS_KEY = ''
-    REGION = ''
-    S3_BUCKET = ''
-
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    path = None
-
     def __init__(self, path=None):
+        load_dotenv()
+        self.SECRET_KEY = os.environ.get('SECRET_KEY')
+        self.ACCESS_KEY = os.environ.get('ACCESS_KEY')
+        self.REGION = os.environ.get('REGION')
+        self.S3_BUCKET = os.environ.get('S3_BUCKET')
         if path is None:
             self.path = self.dir_path+'/data/output.txt'
         if os.path.exists(self.path):
