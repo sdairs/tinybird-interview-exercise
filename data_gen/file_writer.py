@@ -1,48 +1,45 @@
-# import boto3
-# from botocore.exceptions import ClientError
-# import datetime
-# import os
-# import json
-# import parcel_shipping_generator as ps_gen
-
-# ##
-# # SET YOUR AWS KEYS HERE
-# ##
-# SECRET_KEY = ''  # Your IAM User Secret Key
-# ACCESS_KEY = ''  # Your IAM User Access Key
-# REGION = ''  # Your AWS Region
-# S3_BUCKET = ''  # Your AWS bucket name (without the s3:// prefix)
-
-# EVENT_COUNT = 10000  # How many events to generate
+import boto3
+from botocore.exceptions import ClientError
+import datetime
+import os
+import json
+import parcel_shipping_generator as ps_gen
 
 
-# dir_path = os.path.dirname(os.path.realpath(__file__))
+class ACMEFileWriter():
+    SECRET_KEY = ''
+    ACCESS_KEY = ''
+    REGION = ''
+    S3_BUCKET = ''
 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
 
-# # Generate & write to local file
-# with open(dir_path+'/data/output.txt', 'w') as f:
-#     start_time = datetime.datetime.now()
-#     for x in ps_gen.generate_parcel_data(EVENT_COUNT):
-#         f.write(json.dumps(x)+'\n')
-#     end_time = datetime.datetime.now()
-#     print('Took {end_time} seconds'.format(
-#         end_time=(end_time-start_time).total_seconds()))
+    path = None
 
+    def __init__(self, path=None):
+        if path is None:
+            self.path = self.dir_path+'/data/output.txt'
+        if os.path.exists(self.path):
+            os.remove(self.path)
 
-# def upload_file():
-#     # Uploaded generated file to S3
-#     s3 = boto3.client(
-#         's3',
-#         region_name=REGION,
-#         aws_access_key_id=ACCESS_KEY,
-#         aws_secret_access_key=SECRET_KEY
-#     )
-#     try:
-#         print('Uploading to S3')
-#         response = s3.upload_file(dir_path+'/data/output.txt', S3_BUCKET,
-#                                   'tinybird/fake/'+str(datetime.datetime.now())+'.ndjson'.replace(' ', '_'))
-#         print('Finished uploading')
-#         print(response)
-#     except ClientError as e:
-#         return False
-#     return True
+    def write(self, message):
+        with open(self.path, 'a') as f:
+            f.write(json.dumps(message)+'\n')
+            f.close()
+
+    def upload_file(self):
+        # Uploaded generated file to S3
+        s3 = boto3.client(
+            's3',
+            region_name=self.REGION,
+            aws_access_key_id=self.ACCESS_KEY,
+            aws_secret_access_key=self.SECRET_KEY
+        )
+        try:
+            print('Uploading to S3.')
+            _ = s3.upload_file(self.path, self.S3_BUCKET,
+                               'tinybird/fake/'+str(datetime.datetime.now())+'.ndjson'.replace(' ', '_'))
+            print('Finished uploading.')
+        except ClientError as e:
+            return False
+        return True
