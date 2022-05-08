@@ -6,3 +6,4 @@ numpy
 watchdog
 kafka-python
 python-dotenv
+certifi
