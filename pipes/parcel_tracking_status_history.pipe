@@ -1,0 +1,11 @@
+NODE get_parcel_status_history
+SQL >
+
+    %
+    SELECT status, status_updated_at FROM kafka_acme_shipping_parcel_status
+    {% if defined(package_id) %}
+      WHERE package_id = {{ String(package_id) }}
+    {% end %}
+    order by status_updated_at desc
+
+

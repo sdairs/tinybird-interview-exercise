@@ -1,0 +1,26 @@
+
+SCHEMA >
+    `value` String,
+    `topic` LowCardinality(String),
+    `partition` Int16,
+    `offset` Int64,
+    `timestamp` DateTime,
+    `key` String,
+    `courier_id` String `json:$.courier_id`,
+    `package_deliv_time` String `json:$.package_deliv_time`,
+    `package_id` String `json:$.package_id`,
+    `package_send_time` DateTime `json:$.package_send_time`,
+    `recv_id` String `json:$.recv_id`,
+    `sender_id` String `json:$.sender_id`,
+    `status` String `json:$.status`,
+    `status_updated_at` DateTime `json:$.status_updated_at`
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "timestamp"
+
+KAFKA_CONNECTION_NAME 'kafka_acme_shipping_parcel_status'
+KAFKA_TOPIC 'acme_shipping_parcel_status'
+KAFKA_GROUP_ID 'acme_shipping_parcel_status_tb_1'
+KAFKA_AUTO_OFFSET_RESET 'latest'
+KAFKA_STORE_RAW_VALUE 'False'

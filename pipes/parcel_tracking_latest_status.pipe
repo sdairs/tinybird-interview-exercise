@@ -9,7 +9,7 @@ SQL >
     package_id, 
     status, 
     status_updated_at 
-    FROM parcel_tracking_data_1
+    FROM kafka_acme_shipping_parcel_status
     order by status_updated_at desc
 
 

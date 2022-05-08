@@ -1,6 +1,6 @@
 NODE node1
 SQL >
 
-    select count() from parcel_tracking_data_1 where status = 'delivered'
+    select count() from kafka_acme_shipping_parcel_status where status = 'delivered'
 
 

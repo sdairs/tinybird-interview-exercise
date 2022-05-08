@@ -1,6 +1,6 @@
 NODE node1
 SQL >
 
-    SELECT * FROM parcel_tracking_data_1
+    SELECT * FROM kafka_acme_shipping_parcel_status
 
 
