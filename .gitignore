@@ -1,6 +1,7 @@
 data_gen/data/*
 .DS_Store
 .env
+.tinyb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
