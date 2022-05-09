@@ -4,14 +4,16 @@ This is a demo for [Tinybird](https://tinybird.co).
 # What's included
 
 This demo includes:
-- Generation of fake data (& file upload to S3)
-  - `data_gen/generate.py` Simulated parcel shipping data in `ndjson` format
-- Tinybird data source using the fake data
-  - An HTTP URL source that loads the file from S3 
-- Tinybird pipes that expose the data via API
+- Fake Data Generation
+  - `data_gen/data_gen.py` Simulate parcel shipping data
+  - Supported destinations: Kafka, S3
+- Tinybird Data Source
+  - A Kafka Data Source
+- Tinybird Pipes
   - `parcel_tracking_raw` exposes the raw data feed
   - `parcel_tracking_delivered_count` exposes the current count of delivered parcels
   - `parcel_tracking_latest_status` exposes the latest status of each parcel, with an optional filter for a specific parcel ID
+  - `parcel_tracking_status_history` get the full status history for parcels, with an optional filter for a specific parcel ID 
 
 # Getting started
 
@@ -22,6 +24,13 @@ The following python packages are required:
 ```
 boto3
 tinybird-cli
+streamlit
+pandas
+numpy
+watchdog
+kafka-python
+python-dotenv
+certifi
 ```
 
 
@@ -33,9 +42,9 @@ Install the requirements with
 
 ## Setup
 
-### AWS
+### AWS (Optiona)
 
-#### S3
+#### S3 
 
 First, create an S3 bucket to use for the demo (or you can reuse an existing bucket).
 
@@ -49,37 +58,28 @@ Finally, [create an access key](https://aws.amazon.com/premiumsupport/knowledge-
 
 Keep the Access Key and Secret Key handy for the next step.
 
-### Generate.py
+### env vars
 
-Edit `data_gen/generate.py` to add your AWS credentials, S3 bucket details and optionally configure the amount of events you'd like to generate.
-
-You should find this section at the top of the file:
+The following env vars are used for the demo. You can export these as normal, or create a dotenv file `data_gen/.env` and they will be loaded at runtime.
 
 ```
-##
-# SET YOUR AWS KEYS HERE
-##
-SECRET_KEY = '' # Your IAM User Secret Key
-ACCESS_KEY = '' # Your IAM User Access Key
+METHOD = 'kafka' # Must be 'kafka' or 's3'
+EVENT_COUNT = 100 # Must be a valid, positive integer
+
+# Only required if 's3' is set as METHOD
+SECRET_KEY = '' # Your AWS IAM Secret Key
+ACCESS_KEY = '' # Your AWS IAM Access Key
 REGION = '' # Your AWS Region
-S3_BUCKET = '' # Your AWS bucket name (without the s3:// prefix)
-EVENT_COUNT=10000 # How many events to generate
-```
+S3_BUCKET = '' # Your AWS S3 bucket name
 
-Fill in the fields with your environment details, such that it looks like the following example:
-
+# Only required if 'kafka' is set as METHOD
+KAFKA_TOPIC = '' # Your Kafka topic name
+KAFKA_BROKERS = '' # Your broker list with port e.g. my-broker:9092
+KAFKA_SECURITY_PROTOCOL = '' # Must be SASL_SSL, SASL_PLAINTEXT or PLAINTEXT, defaults to PLAINTEXT
+KAFKA_SASL_MECHANISM = '' # Must be PLAIN
+KAFKA_USER = '' # Kafka User
+KAFKA_PASSWORD = '' # Kafka Password
 ```
-##
-# SET YOUR AWS KEYS HERE
-##
-SECRET_KEY = 'fjghsdffjkDFfsg+hfkjgfdh77guwrjnd' # Your IAM User Secret Key
-ACCESS_KEY = 'ALFDJKFBD74FDNBF793' # Your IAM User Access Key
-REGION = 'eu-west-1' # Your AWS Region
-S3_BUCKET = 'tinybird-test' # Your AWS bucket name (without the s3:// prefix)
-EVENT_COUNT=10000 # How many events to generate
-```
-
-Make sure to save the file after editing.
 
 ## Running
 
@@ -87,9 +87,4 @@ Start by generating the fake data.
 
 Run
 
-`python data_gen/generate.py`
-
-Once complete, check that your S3 bucket contains the file, for example:
-
-`tinybird/fake/2022_01_01_00:00:00.ndjson`
-
+`python data_gen/data_gen.py`
