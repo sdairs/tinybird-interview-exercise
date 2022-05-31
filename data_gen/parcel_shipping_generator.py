@@ -132,7 +132,3 @@ def generate_parcel_data(max_days=100, parcels_per_day=1000):
                 else:
                     yield parcel.data
             del parcels[today.date()]
-
-
-for parcel in generate_parcel_data():
-    print(parcel)
