@@ -1,30 +1,9 @@
 import random
 import datetime
+from tracemalloc import start
 from uuid import uuid4
 
-columns = [
-    'sender_id',
-    'package_id',
-    'recv_id',
-    'courier_id',
-    'status',
-    'status_updated_at',
-    'package_send_time',
-    'package_deliv_time'
-]
-
-valid_status = [
-    'awaiting_pickup',
-    'picked_up',
-    'transit_to_depot',
-    'at_depot',
-    'with_courier',
-    'delivered',
-    'missing',
-    'returned_to_sender'
-]
-
-path_status = {
+valid_paths = {
     1: [
         'awaiting_pickup',
         'picked_up',
@@ -60,101 +39,100 @@ path_status = {
 
 # Weighting for the frequency of status paths
 # used by choices() https://docs.python.org/3/library/random.html#random.choices
-path_status_weights = [80, 2, 15, 3]
+valid_paths_weights = [80, 2, 15, 3]
+
+parcels = {}
 
 
-def generate_dates(numdays):
-    # Generate list of valid dates
-    base = datetime.datetime(2020, 1, 1, hour=0, minute=0, second=0)
-    return [base + datetime.timedelta(days=x) for x in range(numdays)]
+class Parcel():
+
+    status_index = 0
+    status_index_max = None
+    created_datetime = None
+    date_for_next_update = None
+    path = None
+
+    data = {
+        'sender_id': str(uuid4()),
+        'package_id': str(uuid4()),
+        'recv_id': str(uuid4()),
+        'courier_id': str(uuid4()),
+        'status': None,
+        'status_updated_at': None,
+        'package_send_time': None,
+        'package_deliv_time': None
+    }
+
+    def date(self):
+        return self.date_for_next_update.date()
+
+    def __init__(self, created_datetime):
+        self.path = random.choices(list(valid_paths.keys()),
+                                   weights=valid_paths_weights, k=1)[0]
+        self.data['status'] = valid_paths[self.path][0]
+        self.data['package_send_time'] = str(created_datetime)
+        self.data['status_updated_at'] = str(created_datetime)
+        self.status_index_max = len(valid_paths[self.path])-1
+        self.created_datetime = created_datetime
+        self.date_for_next_update = self.generate_random_future_timestamp(
+            self.created_datetime, 4)
+
+    def generate_random_future_timestamp(self, current_date, max_future_days=7) -> datetime:
+        future_day = random.randint(1, max_future_days)
+        future_hour = random.randint(1, 24)
+        future_minute = random.randint(1, 60)
+        future_datetime = current_date + \
+            datetime.timedelta(
+                days=future_day, hours=future_hour, minutes=future_minute)
+        return future_datetime
+
+    def is_complete(self):
+        return True if self.status_index == self.status_index_max else False
+
+    def update_status(self) -> bool:
+        # Returns False if the status was updated, but the parcel is not complete
+        # Returns True is the status was updated, and the parcel is now complete
+        self.status_index += 1
+        self.data['status'] = valid_paths[self.path][self.status_index]
+        self.data['status_updated_at'] = str(self.date_for_next_update)
+        if self.is_complete():
+            self.date_for_next_update = None
+            return True
+        else:
+            self.date_for_next_update = self.generate_random_future_timestamp(
+                self.date_for_next_update, 4)
+            return False
 
 
-valid_dates = generate_dates(30)
+def add_parcel(parcel):
+    try:
+        parcels[parcel.date()].append(parcel)
+    except KeyError:
+        parcels[parcel.date()] = [parcel]
 
 
-def generate_couriers():
-    # Generate a list of UUIDs representing the current couriers
-    return [str(uuid4()) for _ in range(1, 100)]
+def generate_parcel_data(max_days=100, parcels_per_day=1000):
+    starting_date = datetime.datetime.today() - datetime.timedelta(days=max_days)
+    for day in range(0, max_days):
+        # LOOP: Iterating over the days in scope
+        today = starting_date + datetime.timedelta(days=day)
+        print(
+            f'Working on day {day} with date {today.year}-{today.month}-{today.day}')
+        for _ in range(1, parcels_per_day):
+            # LOOP: Iterating over the parcels to create today
+            parcel = Parcel(created_datetime=today)
+            add_parcel(parcel)
+        if today.date() in parcels:
+            parcels_to_update_today = len(parcels[today.date()])
+            print(f'There are {parcels_to_update_today} to update today.')
+            for parcel in parcels[today.date()]:
+                # LOOP: Iterate over todays parcels, yield the parcel's data if complete
+                if not parcel.update_status():
+                    add_parcel(parcel)
+                else:
+                    yield parcel.data
+            del parcels[today.date()]
 
 
-valid_couriers = generate_couriers()
-
-
-def generate_regular_customers():
-    # Generate a list of UUIDs representing recurring customers
-    return [str(uuid4()) for _ in range(1, 100)]
-
-
-regular_customers = generate_regular_customers()
-
-
-def get_customer_id():
-    # Get a UUID representing a customer
-    # 25% chance of to pick a recurring customer ID
-    # Remaining customer IDs will be random
-    new_customer = random.randint(0, 20) % 5
-    if new_customer:
-        return str(uuid4())
-    else:
-        return random.choice(regular_customers)
-
-
-def generate_random_timestamps_range(start, end, count):
-    # Generates X number of timestamps between the start/end dates
-    delta = (end-start).total_seconds()  # Seconds between start/end
-    interval = delta / count
-    times = [start]
-    for i in range(0, count-1):
-        times.append(times[i]+datetime.timedelta(seconds=interval))
-    return times
-
-
-def generate_parcel_path():
-    # Generates an end-to-end 'path' of a parcel using the available paths defined in 'path_status'
-    # A 'path' is the change in status of a parcel over time i.e. picked_up -> with_courier -> delivered
-    # This simulated the journey that the parcel took
-    path_results = []
-    # Pick a random path from the dict of paths
-    path = random.choices(list(path_status.keys()),
-                          weights=path_status_weights, k=1)[0]
-    steps = len(path_status[path])
-    # How many days did it take end to end
-    total_days = random.randint(1, 14)
-    # Need a start date that lets the total days fit within valid days
-    max_start_date_index = (len(valid_dates)-1) - total_days
-    # Pick any of the valid start days
-    start_date_index = random.randint(0, max_start_date_index)
-    start_date = valid_dates[start_date_index]
-    end_date = valid_dates[start_date_index+total_days]
-    # Create a timestamp for each step in the selected path
-    timestamps = generate_random_timestamps_range(
-        start_date, end_date, steps)
-    for i in range(0, steps):
-        path_results.append({
-            'status': valid_status[i],
-            'status_updated_at': timestamps[i],
-            'package_send_time': start_date,
-            'package_deliv_time': end_date if i == steps-1 and valid_status[i] == 'delivered' else ''
-        })
-
-    return path_results
-
-
-def generate_parcel_data(num_parcels):
-    # Generate X number of parcel transactions, each with their complete end to end paths
-    for parcel in range(0, num_parcels):
-        sender_id = get_customer_id()
-        package_id = str(uuid4())
-        recv_id = str(uuid4())
-        courier_id = random.choice(valid_couriers)
-        for path in generate_parcel_path():
-            yield {
-                'sender_id': sender_id,
-                'package_id': package_id,
-                'recv_id': recv_id,
-                'courier_id': courier_id,
-                'status': path['status'],
-                'status_updated_at': str(path['status_updated_at']),
-                'package_send_time': str(path['package_send_time']),
-                'package_deliv_time': str(path['package_deliv_time']),
-            }
+for parcel in generate_parcel_data():
+    print(parcel)
