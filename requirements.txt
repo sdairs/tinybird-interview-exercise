@@ -1,9 +1,24 @@
-boto3
-tinybird-cli
-streamlit
 pandas
 numpy
-watchdog
+python-dotenv 
+certifi # Provides certs needs for Confluent TLS
+
+# Kafka
 kafka-python
-python-dotenv
-certifi
+
+# Tinybird
+tinybird-cli
+
+# Snowflake
+snowflake-connector-python
+
+# AWS
+boto3
+
+# Google Cloud
+google-cloud-bigquery
+google-cloud-storage
+
+# Visualisation
+streamlit
+watchdog # Interactive refreshes for streamlit

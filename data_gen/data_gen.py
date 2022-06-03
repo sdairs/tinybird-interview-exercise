@@ -1,5 +1,5 @@
-from kafka_producer import ACMEKafkaProducer
-from file_writer import ACMEFileWriter
+from kafka.kafka_producer import ACMEKafkaProducer
+from file.s3_writer import ACMEFileWriter
 from datetime import datetime
 import parcel_shipping_generator as ps_gen
 from dotenv import load_dotenv
